@@ -1,0 +1,116 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vibe-secrets"
+version = "0.1.0"
+description = "Local encrypted secret vault for AI-assisted development — one place for every API key, agents write .env without ever seeing values."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "moinsen.dev", email = "developer@moinsen.dev" }]
+keywords = [
+    "secrets",
+    "vault",
+    "env",
+    "dotenv",
+    "ai-agents",
+    "claude-code",
+    "codex",
+    "cursor",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+]
+dependencies = [
+    "cryptography>=42.0",
+    "keyring>=24.0",
+    "click>=8.1",
+    "rich>=13.0",
+    "textual>=0.60",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.5.0",
+    "build>=1.2",
+    "twine>=5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/moinsen-dev/vibe-secrets"
+Repository = "https://github.com/moinsen-dev/vibe-secrets"
+Issues = "https://github.com/moinsen-dev/vibe-secrets/issues"
+Changelog = "https://github.com/moinsen-dev/vibe-secrets/blob/main/CHANGELOG.md"
+
+[project.scripts]
+vibe-secrets = "vibe_secrets.cli:main"
+vs = "vibe_secrets.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vibe_secrets"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/vibe_secrets/**/*.py",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "pyproject.toml",
+    "Justfile",
+    "tests/**/*.py",
+    "claude/**",
+    "concept/**",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F",  # pyflakes + pycodestyle
+    "I",            # isort
+    "UP",           # pyupgrade
+    "B",            # bugbear
+    "SIM",          # simplify
+    "RUF",          # ruff-specific
+]
+ignore = [
+    "E501",  # line length — handled by the formatter
+    "B008",  # function call in default (click requires it for decorators)
+    "SIM105",  # contextlib.suppress adds noise vs try/except: pass
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["B011"]  # allow assert False in tests
+"src/vibe_secrets/cli.py" = ["B904"]  # Click CLI translates exceptions at the boundary
+"src/vibe_secrets/tui.py" = ["RUF012", "UP045"]  # Textual framework idiom for BINDINGS / ModalScreen[Optional[T]]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
