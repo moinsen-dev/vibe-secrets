@@ -50,7 +50,7 @@ just onboard          # install + bootstrap (vault + Claude skill)
 
 ```bash
 just dev              # create .venv and install with dev deps
-just test             # run the suite (76 tests)
+just test             # run the suite (101 tests)
 ```
 
 ## New machine, zero to useful in one command
@@ -281,7 +281,7 @@ src/vibe_secrets/
 └── tui.py          Textual TUI
 
 claude/skills/vibe-secrets/SKILL.md  # regenerated from templates.py
-tests/               76 tests total
+tests/               101 tests total
 ```
 
 ## License

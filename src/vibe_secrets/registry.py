@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import tempfile
 from pathlib import Path
 
 from .config import ensure_vault_dir, vault_dir
@@ -43,11 +44,19 @@ def load() -> dict:
 def save(reg: dict) -> None:
     ensure_vault_dir()
     path = _registry_file()
-    path.write_text(json.dumps(reg, indent=2, ensure_ascii=False), encoding="utf-8")
+    directory = path.parent
+    fd, tmp_path = tempfile.mkstemp(prefix=".registry.", suffix=".tmp", dir=str(directory))
     try:
-        os.chmod(path, 0o600)
-    except OSError:
-        pass
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(json.dumps(reg, indent=2, ensure_ascii=False))
+        os.chmod(tmp_path, 0o600)
+        os.replace(tmp_path, path)
+    except BaseException:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def _key(project_path: str | Path) -> str:

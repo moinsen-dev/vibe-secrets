@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vibe-secrets"
-version = "0.1.0"
+version = "0.1.1"
 description = "Local encrypted secret vault for AI-assisted development — one place for every API key, agents write .env without ever seeing values."
 readme = "README.md"
 requires-python = ">=3.10"

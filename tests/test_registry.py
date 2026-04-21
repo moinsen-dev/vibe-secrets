@@ -50,3 +50,15 @@ def test_unregister(vault_env: Path, tmp_path: Path) -> None:
     assert registry.unregister(p) is True
     assert registry.get(p) is None
     assert registry.unregister(p) is False
+
+
+def test_registry_file_has_restricted_permissions(vault_env: Path, tmp_path: Path) -> None:
+    p = tmp_path / "demo"
+    p.mkdir()
+    registry.register(p, "demo", "dev")
+    from vibe_secrets.config import vault_dir
+
+    reg_path = vault_dir() / "projects.json"
+    assert reg_path.exists()
+    mode = reg_path.stat().st_mode & 0o777
+    assert mode == 0o600

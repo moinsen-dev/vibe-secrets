@@ -102,3 +102,30 @@ def test_audit_log_records_operations(vault_env: Path) -> None:
     assert "add" in ops
     assert "list" in ops
     assert "show" in ops
+
+
+def test_reveal_rejects_invalid_name(vault_env: Path) -> None:
+    runner = CliRunner()
+    runner.invoke(main, ["init"])
+    r = runner.invoke(main, ["reveal", "lowercase"])
+    assert r.exit_code != 0
+    assert r.exception is not None
+    assert "Invalid secret name" in str(r.exception)
+
+
+def test_copy_rejects_invalid_scope(vault_env: Path) -> None:
+    runner = CliRunner()
+    runner.invoke(main, ["init"])
+    r = runner.invoke(main, ["copy", "TEST_KEY", "--scope", "bad-scope"])
+    assert r.exit_code != 0
+    assert r.exception is not None
+    assert "Invalid scope" in str(r.exception)
+
+
+def test_revoke_rejects_invalid_name(vault_env: Path) -> None:
+    runner = CliRunner()
+    runner.invoke(main, ["init"])
+    r = runner.invoke(main, ["revoke", "bad-name"])
+    assert r.exit_code != 0
+    assert r.exception is not None
+    assert "Invalid secret name" in str(r.exception)

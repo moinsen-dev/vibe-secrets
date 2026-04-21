@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
+import pytest
+
+from vibe_secrets import scanner
 from vibe_secrets.scanner import scan
 
 
@@ -94,3 +98,24 @@ def test_min_length(tmp_path: Path) -> None:
     found = scan(tmp_path)
     assert "AB" not in found
     assert "ABC" in found
+
+
+def test_scan_warns_on_truncation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    for i in range(10):
+        _write(tmp_path / f"f{i}.py", f'os.getenv("KEY{i}")\n')
+
+    orig_iter = scanner._iter_files
+
+    def limited_iter(root, max_files=20000):
+        return orig_iter(root, max_files=3)
+
+    monkeypatch.setattr(scanner, "_iter_files", limited_iter)
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        result = scan(tmp_path)
+        assert len(w) == 1
+        assert "Scanning stopped" in str(w[0].message)
+        assert issubclass(w[0].category, UserWarning)
+        # Some keys should still have been found before the limit.
+        assert len(result) >= 1

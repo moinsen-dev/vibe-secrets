@@ -250,7 +250,16 @@ def parse_env_file(path: Path) -> list[tuple[str, str]]:
         if head.startswith("export "):
             head = head[len("export ") :].strip()
         value = value.strip()
-        if len(value) >= 2 and ((value[0] == value[-1] == '"') or (value[0] == value[-1] == "'")):
+        if len(value) >= 2 and value[0] == value[-1] == '"':
+            value = value[1:-1]
+            value = (
+                value.replace("\\\\", "\x00")
+                .replace("\\n", "\n")
+                .replace("\\t", "\t")
+                .replace('\\"', '"')
+                .replace("\x00", "\\")
+            )
+        elif len(value) >= 2 and value[0] == value[-1] == "'":
             value = value[1:-1]
         out.append((head, value))
     return out

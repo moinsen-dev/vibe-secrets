@@ -26,7 +26,13 @@ def _shell_quote(value: str) -> str:
     special = any(c in value for c in " \t#\"'\n=$\\")
     if not special:
         return value
-    escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("$", "\\$")
+    escaped = (
+        value.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("$", "\\$")
+        .replace("\n", "\\n")
+        .replace("\t", "\\t")
+    )
     return f'"{escaped}"'
 
 

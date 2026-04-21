@@ -72,4 +72,5 @@ class KeyRecord:
 
     @classmethod
     def from_storage(cls, data: dict) -> KeyRecord:
-        return cls(**data)
+        known = {f.name for f in cls.__dataclass_fields__.values()}
+        return cls(**{k: v for k, v in data.items() if k in known})

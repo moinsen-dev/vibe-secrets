@@ -271,6 +271,8 @@ def show(name: str, scope: str) -> None:
 @click.option("--yes", is_flag=True, help="Skip confirmation.")
 def reveal(name: str, scope: str, yes: bool) -> None:
     """Print the raw value. Requires confirmation."""
+    validate_name(name)
+    validate_scope(scope)
     v = _open_vault()
     try:
         rec = v.get(name, scope)
@@ -290,6 +292,8 @@ def reveal(name: str, scope: str, yes: bool) -> None:
 @click.option("--yes", is_flag=True, help="Skip confirmation.")
 def copy(name: str, scope: str, yes: bool) -> None:
     """Copy the raw value to the OS clipboard."""
+    validate_name(name)
+    validate_scope(scope)
     v = _open_vault()
     try:
         rec = v.get(name, scope)
@@ -330,6 +334,8 @@ def rotate(name: str, scope: str, value: str | None) -> None:
 @click.option("--yes", is_flag=True, help="Skip confirmation.")
 def revoke(name: str, scope: str, yes: bool) -> None:
     """Mark a secret as revoked. It will be ignored by inject but metadata is kept."""
+    validate_name(name)
+    validate_scope(scope)
     v = _open_vault()
     try:
         v.get(name, scope)

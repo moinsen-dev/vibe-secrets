@@ -95,3 +95,15 @@ def test_preserves_comments_and_order_in_preserve_mode(tmp_path: Path, vault_env
     assert "# user comment" in text
     assert "EXISTING_VAR=abc" in text
     assert "ANTHROPIC_API_KEY=sk-global" in text
+
+
+def test_newline_value_is_escaped(tmp_path: Path, vault_env: Path) -> None:
+    v = Vault()
+    v.init_empty()
+    v.add("MULTI", "global", "line1\nline2")
+    project = tmp_path / "p"
+    project.mkdir()
+    res = resolve(v, ["MULTI"], None, None)
+    write_env(project, ".env", res)
+    text = (project / ".env").read_text()
+    assert 'MULTI="line1\\nline2"' in text

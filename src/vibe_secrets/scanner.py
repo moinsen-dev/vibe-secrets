@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import re
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -140,6 +141,12 @@ _STOPWORDS = {
 _MAX_FILE_BYTES = 512 * 1024  # 512 KiB per file
 
 
+class ScanTruncatedError(Exception):
+    """Raised when the file scanner hits its safety limit."""
+
+    pass
+
+
 def _iter_files(root: Path, max_files: int = 20000) -> Iterable[Path]:
     root = root.resolve()
     count = 0
@@ -156,7 +163,10 @@ def _iter_files(root: Path, max_files: int = 20000) -> Iterable[Path]:
                 p = Path(dirpath) / fn
             count += 1
             if count > max_files:
-                return
+                raise ScanTruncatedError(
+                    f"Scanning stopped after {max_files} files. "
+                    "Remaining files were skipped."
+                )
             yield p
 
 
@@ -175,23 +185,26 @@ def scan(
             except OSError:
                 pass
     found: set[str] = set()
-    for p in _iter_files(root):
-        try:
-            if p.resolve() in skip:
+    try:
+        for p in _iter_files(root):
+            try:
+                if p.resolve() in skip:
+                    continue
+                if p.stat().st_size > _MAX_FILE_BYTES:
+                    continue
+                text = p.read_text(encoding="utf-8", errors="ignore")
+            except (OSError, UnicodeDecodeError):
                 continue
-            if p.stat().st_size > _MAX_FILE_BYTES:
-                continue
-            text = p.read_text(encoding="utf-8", errors="ignore")
-        except (OSError, UnicodeDecodeError):
-            continue
-        for pat in _PATTERNS:
-            for m in pat.finditer(text):
-                name = m.group(1)
-                if not name or len(name) < 3:
-                    continue
-                if name in _STOPWORDS:
-                    continue
-                if name.startswith("HTTP_") and len(name) <= 8:
-                    continue
-                found.add(name)
+            for pat in _PATTERNS:
+                for m in pat.finditer(text):
+                    name = m.group(1)
+                    if not name or len(name) < 3:
+                        continue
+                    if name in _STOPWORDS:
+                        continue
+                    if name.startswith("HTTP_") and len(name) <= 8:
+                        continue
+                    found.add(name)
+    except ScanTruncatedError as exc:
+        warnings.warn(str(exc), UserWarning, stacklevel=2)
     return found

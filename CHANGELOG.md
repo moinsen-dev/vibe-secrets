@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-04-21
+
+### Fixed
+
+- `envwriter._shell_quote` now correctly escapes `\n` and `\t` inside double-quoted
+  `.env` values, preventing broken multi-line `.env` files.
+- `projectops.parse_env_file` now unescapes `\\n`, `\\t`, `\\"`, and `\\\\` inside
+  double-quoted values during import, so round-trips through the vault preserve
+  special characters.
+- `KeyRecord.from_storage` now ignores unknown fields instead of crashing with
+  `TypeError`, making vault data forward-compatible with future format versions.
+- `registry.save` now writes atomically via tempfile + `os.replace`, preventing
+  corruption of `projects.json` if the process is interrupted.
+- `scanner` now emits a `UserWarning` when the 20,000-file safety limit is hit,
+  instead of silently truncating results.
+- CLI commands `reveal`, `copy`, and `revoke` now validate secret names and scopes
+  up front, giving clear errors instead of generic "Not found" messages.
+
 ## [0.1.0] — 2026-04-20
 
 First public release.

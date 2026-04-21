@@ -101,6 +101,23 @@ def test_parse_env_file_handles_quotes_and_export(tmp_path: Path) -> None:
     assert out["BLANK"] == ""
 
 
+def test_parse_env_file_unescapes_double_quotes(tmp_path: Path) -> None:
+    p = tmp_path / ".env"
+    p.write_text(
+        'ESCAPED="hello\\nworld"\n'
+        'TAB="a\\tb"\n'
+        'BACKSLASH="x\\\\y"\n'
+        'QUOTE="say \\"hi\\""\n'
+        "SINGLE='literal\\n'\n"
+    )
+    out = dict(projectops.parse_env_file(p))
+    assert out["ESCAPED"] == "hello\nworld"
+    assert out["TAB"] == "a\tb"
+    assert out["BACKSLASH"] == "x\\y"
+    assert out["QUOTE"] == 'say "hi"'
+    assert out["SINGLE"] == "literal\\n"
+
+
 def test_is_managed_detects_header(tmp_path: Path) -> None:
     p = tmp_path / ".env"
     p.write_text("# Managed by vibe-secrets. Do not commit.\nFOO=bar\n")

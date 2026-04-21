@@ -141,3 +141,20 @@ def test_stats(vault_env: Path) -> None:
     assert s["active"] == 2
     assert s["revoked"] == 1
     assert s["scopes"] == {"global": 2, "project:p:dev": 1}
+
+
+def test_from_storage_ignores_unknown_fields(vault_env: Path) -> None:
+    from vibe_secrets.models import KeyRecord
+
+    rec = KeyRecord.from_storage(
+        {
+            "name": "TEST",
+            "scope": "global",
+            "value": "v",
+            "future_field": "ignored",
+            "another_future": 123,
+        }
+    )
+    assert rec.name == "TEST"
+    assert rec.scope == "global"
+    assert rec.value == "v"
